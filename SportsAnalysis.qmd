@@ -1,0 +1,149 @@
+---
+title: "Lebron vs MJ Statistical Comparison"
+subtitle: "Sprint 1 Personal Project"
+author: "Kevin Frehner"
+format:
+  html:
+    self-contained: true
+    page-layout: full
+    title-block-banner: true
+    toc: true
+    toc-depth: 3
+    toc-location: body
+    number-sections: false
+    html-math-method: katex
+    code-fold: true
+    code-summary: "Show the code"
+    code-overflow: wrap
+    code-copy: hover
+    code-tools:
+        source: false
+        toggle: true
+        caption: See code
+execute: 
+  warning: false
+    
+---
+
+```{python}
+import polars as pl
+import numpy as np
+from lets_plot import *
+
+LetsPlot.setup_html(isolated_frame=True)
+```
+
+```{python}
+df = pl.read_csv(
+    "allgames_stats.csv",
+    null_values=["NA", "null", ""],
+    ignore_errors=True
+)
+
+df = df.filter(
+    pl.col("Player").is_in([
+        "Michael Jordan",
+        "Lebron James"
+    ])
+)
+```
+
+## Points scored
+
+__The main stats that most fans look to when comparing players\nis naturally going to be points scored as it has the clearest impact on the outcome of a game. Scoring itself for both of these players comes naturally and what many fans focus this discussion on in playoff performance.__
+
+```{python}
+career_stats = (
+    df.group_by("Player")
+      .agg([
+          pl.sum("PTS").alias("Total_Points")
+      ])
+)
+
+print(career_stats)
+
+
+```
+
+## Win rate in regular season vs the playoffs
+
+__One of the defining variables in this debate is playoff success. Both of these athletes have proven to be above being quantified by regular season success.__
+
+```{python}
+df = df.with_columns(
+    pl.col("Result")
+      .str.starts_with("W")
+      .cast(pl.Int8)
+      .alias("Win")
+)
+
+regular_win_rate = (
+    df.filter(pl.col("RSorPO") == "Regular Season")
+      .group_by("Player")
+      .agg([
+          pl.mean("Win").alias("Regular_Win_Rate"),
+          pl.len().alias("Regular_Games")
+      ])
+)
+
+print(regular_win_rate)
+
+playoff_win_rate = (
+    df.filter(pl.col("RSorPO") == "Playoffs")
+      .group_by("Player")
+      .agg([
+          pl.mean("Win").alias("Playoff_Win_Rate"),
+          pl.len().alias("Playoff_Games")
+      ])
+)
+
+print(playoff_win_rate)
+
+win_rates = regular_win_rate.join(
+    playoff_win_rate,
+    on="Player"
+)
+win_rates = win_rates.drop(["Regular_Games", "Playoff_Games"])
+
+win_rates = win_rates.with_columns([
+    (pl.col("Regular_Win_Rate") * 100).round(2),
+    (pl.col("Playoff_Win_Rate") * 100).round(2)
+])
+
+print(win_rates)
+
+```
+
+These statistics give more insight into how each players' careers went, both in playoffs and in the regular season.
+
+## Total Points Attributed
+One key defining characteristic between the two is how well they are able to not only score themselves, but also get their teammates involved.
+
+``` {python}
+career_assists = (
+    df.group_by("Player")
+      .agg([
+          pl.sum("AST").alias("Total_Assists")
+      ])
+)
+
+print(career_assists)
+
+total_attributed = (
+    df.group_by("Player")
+      .agg([
+          (pl.sum("PTS") + pl.sum("AST")).alias("Total Points Attributed")
+      ])
+)
+
+print(total_attributed)
+
+
+
+```
+
+This combination of the two statistics gives more clarity and offers a bigger picture for the people that strictly watch PPG statistics. 
+
+## Conclusion
+
+Both of these players are 1A and 1B, after reviewing the stats and what I know about both of them, I am going to make the claim that Lebron James is the greater basketball player based on his scoring statistics and the longevity that he has with a substantial amount more of games played.
