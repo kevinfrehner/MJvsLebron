@@ -29,8 +29,8 @@ To recreate the development environment, you need the following software and/or 
 I found these websites useful in developing this software:
 
 * [Polars Cheat Sheet](https://franzdiebold.github.io/polars-cheat-sheet/Polars_cheat_sheet.pdf)
-*[Kaggle](https://www.kaggle.com/datasets/xvivancos/michael-jordan-kobe-bryant-and-lebron-james-stats/code)
-*[Python] (https://realpython.com/cheatsheets/python/)
+* [Kaggle](https://www.kaggle.com/datasets/xvivancos/michael-jordan-kobe-bryant-and-lebron-james-stats/code)
+* [Python](https://realpython.com/cheatsheets/python/)
 
 ## Future Work
 
